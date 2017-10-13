@@ -6,9 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.jetbrains.php.lang.documentation.phpdoc.psi.PhpDocType;
 import com.jetbrains.php.lang.inspections.PhpInspection;
-import com.jetbrains.php.lang.psi.elements.Function;
-import com.jetbrains.php.lang.psi.elements.Method;
-import com.jetbrains.php.lang.psi.elements.Parameter;
+import com.jetbrains.php.lang.psi.elements.*;
 import com.jetbrains.php.lang.psi.visitors.PhpElementVisitor;
 
 import org.jetbrains.annotations.NotNull;
@@ -31,18 +29,18 @@ public class UsingAsTypeInspection extends PhpInspection {
         return new PhpElementVisitor() {
             @Override
             public void visitPhpMethod(final Method method) {
-                final PsiElement methodReturnType = method.getReturnType();
+                PhpReturnType returnType = method.getReturnType();
+                final ClassReference methodReturnTypeClassReference = returnType!=null ? returnType.getClassReference(): null;
 
-                if (FluentUtil.isUsingDirectly(methodReturnType)) {
-                    problemsHolder.registerProblem(methodReturnType, messageDirectInstantiation, ProblemHighlightType.WEAK_WARNING);
+                if (FluentUtil.isUsingDirectly(methodReturnTypeClassReference)) {
+                    problemsHolder.registerProblem(methodReturnTypeClassReference, messageDirectInstantiation, ProblemHighlightType.WEAK_WARNING);
                 }
             }
 
             @Override
             public void visitPhpFunction(final Function function) {
-                final PsiElement functionReturnType = function.getReturnType();
-
-                if (FluentUtil.isUsingDirectly(functionReturnType)) {
+                final PhpReturnType functionReturnType = function.getReturnType();
+                if (functionReturnType != null && FluentUtil.isUsingDirectly(functionReturnType.getClassReference())) {
                     problemsHolder.registerProblem(functionReturnType, messageDirectInstantiation, ProblemHighlightType.WEAK_WARNING);
                 }
             }
